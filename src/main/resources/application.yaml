@@ -1,0 +1,65 @@
+server:
+  port: 8099
+
+## SWAGGER API
+springdoc:
+  api-docs:
+    resolve-schema-properties: true
+  swagger-ui.path: /api/documentation
+  swagger-ui.operationsSorter: method
+
+spring:
+  application:
+    name: TelegramBotAPI
+  output:
+    ansi:
+      enabled: always # for multicolor console logging
+  main:
+    banner-mode: console # or maybe off
+  jpa:
+    generate-ddl: false # don't create missing tables!
+    database-platform: org.hibernate.dialect.Oracle12cDialect
+    show-sql: true
+  datasource:
+    url: jdbc:oracle:thin:@localhost:1521/DB
+    username: YOUR_NAME
+    password: YOUR_PASSWORD
+    driver-class-name: oracle.jdbc.OracleDriver
+    oracleucp:
+      min-pool-size: 1
+      max-pool-size: 5
+
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: YOUR_NAME
+    password: YOUR_PASSWORD
+
+    listener:
+      simple:
+        concurrency: 5
+        prefetch: 10
+
+messaging:
+  notifications:
+    # exchange name
+    exchange:
+      telegramBot: notifications.exchange.telegrambot
+    # routing keys
+    routingKeys:
+      telegramBot: notifications.telebot.message
+    # queues
+    queues:
+      telebot: notifications.telebot.message.queue
+
+logging:
+    level:
+      root: INFO
+      com.choonsky.telegrambot: DEBUG
+
+telegram:
+  botName: put_your_name
+  botToken: xxxxxxxxxx:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  proxyType: NO_PROXY
+  proxyHost: 0
+  proxyPort: 0

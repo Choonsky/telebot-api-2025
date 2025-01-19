@@ -1,0 +1,29 @@
+  version: '3.8'
+  services:
+    telegrambotapi:
+      ports:
+        - "8092:8092"
+      image: registry.choonsky.com/telegrambotapi:latest
+      deploy:
+        replicas: 2
+        resources:
+          limits:
+            cpus: '1'
+            memory: 1G
+        restart_policy:
+          condition: on-failure
+        placement:
+          max_replicas_per_node: 1
+          constraints: 
+            - "node.role != manager"
+      environment:
+        - JAVA_OPTS=-XX:MinRAMPercentage=30 -XX:MaxRAMPercentage=80 
+        - SERVER_PORT=8092
+        - SERVER_SERVLET_CONTEXT-PATH=/telegrambotapi
+        - SERVER_USE-FORWARDED-HEADERS=true
+        - SERVER_FORWARD-HEADERS-STRATEGY=framework
+        - SPRING_APPLICATION_NAME=telegrambotapi
+        - EUREKA_CLIENT_ENABLED=false
+      volumes:
+        - /opt/logs:/opt/logs/
+      restart: unless-stopped

@@ -1,0 +1,103 @@
+stages:
+  - build
+  - test
+  - push_image
+  - deploy
+
+variables:
+  CONTAINER_NAME: "telegrambotapi"
+  IMAGE_NAME: "telegrambotapi"
+  GROUP_NAME: "your-group-name"
+  GIT_STRATEGY: none
+  TEST_COMPOSE_FILE: "docker-compose.test.yml"
+  PROD_COMPOSE_FILE: "docker-compose.prod.yml"
+  MAVEN_RUNNER_TAG: "your-runner-tab"
+  
+Build:
+  stage: build
+  variables:
+    GIT_STRATEGY: clone
+  only:
+    refs:
+      - test
+      #...
+    variables:
+      - $CI_PIPELINE_SOURCE == "merge_request_event"
+      - $CI_PIPELINE_SOURCE == "push"
+
+      
+  script:
+    - echo "Building application"
+    - echo "Perform actions on branch" ${CI_COMMIT_BRANCH}
+    - mvn clean install
+    - mvn clean package
+  tags: ["${MAVEN_RUNNER_TAG}"]
+
+Test:
+  stage: test
+  variables:
+    GIT_CLEAN_FLAGS: "false"
+  only:
+    refs:
+      - test
+      #...
+    variables:
+      - $CI_PIPELINE_SOURCE == "merge_request_event"
+      - $CI_PIPELINE_SOURCE == "push"
+
+  script:
+    - echo "Running tests"
+    - mvn test
+  tags: ["${MAVEN_RUNNER_TAG}"]
+
+Push image:
+  stage: push_image
+  variables:
+    GIT_CLEAN_FLAGS: "false"
+  only:
+    refs:
+      - test
+      #...
+    variables:
+      - $CI_PIPELINE_SOURCE == "merge_request_event"
+      - $CI_PIPELINE_SOURCE == "push"
+  before_script:
+    - echo "${REGISTRY_PASSWORD}" | docker login "${REGISTRY_URL}"  --username 	"${REGISTRY_USER}" --password-stdin
+  script:
+    - docker build -t ${REGISTRY_URL}/${GROUP_NAME}/${IMAGE_NAME}:latest . 
+    - docker push ${REGISTRY_URL}/${GROUP_NAME}/${IMAGE_NAME}:latest
+    - cosign sign --key ~/.cosign_keys/cosign.key ${REGISTRY_URL}/${GROUP_NAME}/${IMAGE_NAME}:latest --tlog-upload=false
+
+  after_script:
+    - docker system prune -af
+  tags: ["${MAVEN_RUNNER_TAG}"]
+
+Deploy:
+  stage: deploy
+  variables:
+    GIT_STRATEGY: clone
+  only:
+    refs:
+      - test
+      #...
+    variables:
+      - $CI_PIPELINE_SOURCE != "pipeline"
+  #Add here if statement(Make this only for test, te)
+  before_script:
+    - echo "${REGISTRY_PASSWORD}" | docker login "${REGISTRY_URL}"  --username 	"${REGISTRY_USER}" --password-stdin
+  script:
+    - if [ $CI_COMMIT_BRANCH == "prod" ]; then
+    - echo "DEPLOYING ON prod"
+    - docker stack deploy --compose-file docker-compose.yml --compose-file $PROD_COMPOSE_FILE ${GROUP_NAME} --with-registry-auth
+
+    - else
+    - echo "DEPLOYING on test"
+    - docker stack deploy --compose-file docker-compose.yml --compose-file $TEST_COMPOSE_FILE ${GROUP_NAME} --with-registry-auth
+    - fi
+    
+  after_script:
+    - echo "Cleanup docker images local storage"
+    - docker system prune -af
+
+  #SHOULD BE MANAGER NODE FOR DOCKER_SWARM
+  tags: ["${CI_COMMIT_BRANCH}_your-node-tag"]
