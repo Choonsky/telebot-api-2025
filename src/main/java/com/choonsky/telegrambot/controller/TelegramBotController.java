@@ -1,30 +1,20 @@
 package com.choonsky.telegrambot.controller;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import com.choonsky.telegrambot.exception.ApiException;
 import com.choonsky.telegrambot.exception.UnknownSeverityException;
-import com.choonsky.telegrambot.model.Headers;
-import com.choonsky.telegrambot.model.Severity;
-import com.choonsky.telegrambot.model.TelebotGroup;
-import com.choonsky.telegrambot.model.TelebotLnkUserGroup;
-import com.choonsky.telegrambot.model.TelebotMessage;
-import com.choonsky.telegrambot.model.TelebotUser;
+import com.choonsky.telegrambot.model.*;
 import com.choonsky.telegrambot.repository.TelebotGroupRepository;
 import com.choonsky.telegrambot.repository.TelebotLnkUserGroupRepository;
 import com.choonsky.telegrambot.repository.TelebotMessageRepository;
 import com.choonsky.telegrambot.telegram.BotComponent;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.time.LocalDateTime;
@@ -35,9 +25,8 @@ import static com.choonsky.telegrambot.model.Severity.INCORRECT_SEVERITY;
 
 @RestController
 @RequestMapping("/**")
+@Slf4j
 public class TelegramBotController {
-
-    private static final Logger logger = LoggerFactory.getLogger(TelegramBotController.class);
 
     private final BotComponent bot;
     private final TelebotGroupRepository groupRepo;
@@ -57,7 +46,7 @@ public class TelegramBotController {
     @Operation(summary = "Returns a String about Telebot message")
     @ApiResponse(description = "Telegram Bot API exception: (detailed description)", responseCode = "480", content =
     @Content)
-    public ResponseEntity<String> sendMessage(@ModelAttribute Headers headers, @RequestBody TelebotMessage msg)
+    public ResponseEntity<String> sendMessage(@RequestBody TelebotMessage msg)
             throws ApiException {
 
         if (msg.getSystem().trim().isEmpty())
@@ -94,10 +83,9 @@ public class TelegramBotController {
 
         for (String chatId : chatIds) {
             try {
-                // logger.info("Sending message to chatId: {}", chatId);
                 bot.sendNotification(chatId, msgText.toString());
             } catch (TelegramApiException e) {
-                logger.error("Failed to send notification to chatId: {} with error: {}", chatId, e.getMessage());
+                log.error("Failed to send notification to chatId: {} with error: {}", chatId, e.getMessage());
             }
         }
 

@@ -1,5 +1,11 @@
 # Telegram Bot Api
 
+## Requirements:
+- Oracle DB or another SQL DB (change application.yaml)
+- RabbitMQ (change application.yaml)
+- Telegram Bot registered (change application.yaml)
+- For CI/CD: config "Future CI/CD" folder files
+
 ## Protocol
 
 HTTP request should have:

@@ -1,5 +1,6 @@
 package com.choonsky.telegrambot.telegram;
 
+import com.choonsky.telegrambot.listener.MqListener;
 import jakarta.annotation.PostConstruct;
 import com.choonsky.telegrambot.exception.TelebotException;
 import com.choonsky.telegrambot.exception.UnknownSeverityException;
@@ -45,7 +46,7 @@ public class BotComponent extends TelegramLongPollingBot {
     public void init() {
         try {
             botsApi.registerBot(this);
-            System.out.println("Telegram bot has been registered!");
+            log.info("Telegram bot has been registered!");
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }
@@ -66,8 +67,6 @@ public class BotComponent extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
-
-        System.out.println("Got an update!" + update);
 
         if (update.hasMessage()) {
 
