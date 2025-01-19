@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- This file should be in the ${user.home}/.m2 directory
+or you can put it anywhere and use - - global-toolchains file mvn option -->
+
+<toolchains>
+    <!-- JDK toolchains -->
+    <toolchain>
+        <type>jdk</type>
+        <provides>
+            <version>11</version>
+            <vendor>OpenJDK</vendor>
+        </provides>
+        <configuration>
+            <jdkHome>/usr/lib/jvm/java-11</jdkHome>
+        </configuration>
+    </toolchain>
+    <toolchain>
+        <type>jdk</type>
+        <provides>
+            <version>17</version>
+            <vendor>OpenJDK</vendor>
+        </provides>
+        <configuration>
+            <jdkHome>/usr/lib/jvm/java-17</jdkHome>
+        </configuration>
+    </toolchain>
+</toolchains>
