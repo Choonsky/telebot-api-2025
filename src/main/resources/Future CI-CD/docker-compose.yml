@@ -3,6 +3,7 @@
     telegrambotapi:
       ports:
         - "8099:8099"
+
       image: registry.choonsky.com/telegrambotapi:latest
       deploy:
         replicas: 2
